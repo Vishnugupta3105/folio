@@ -16,6 +16,19 @@ export const GET = handle(async (request: Request, { params }: Params) => {
   const book = await db.getBook(user.id, id);
   if (!book) return notFound("That book isn't in your library.");
 
+  // Ownership is settled above; the bytes themselves don't need to come through
+  // here. A serverless function may only return 4.5 MB and books are commonly
+  // larger, so proxying them fails on exactly the books people care about.
+  // Redirecting keeps the check and drops the middleman — the same reasoning
+  // that already sends uploads straight to storage.
+  const direct = await db.createDirectDownload(book.fileKey);
+  if (direct) {
+    // 307 so the method and any Range header survive the hop. Storage serves
+    // ranges itself, which is what lets a long PDF render before it has all
+    // arrived; the signed link expires, so it is not a durable capability.
+    return NextResponse.redirect(direct.url, 307);
+  }
+
   const file = await db.getFile(book.fileKey);
   if (!file) return notFound("The file for this book is missing.");
 

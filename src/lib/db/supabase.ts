@@ -6,6 +6,12 @@ import type {
 import { type DataAdapter, defaultPreferences } from "./adapter";
 
 const BUCKET = "books";
+/**
+ * Lifetime of a direct download link. Long enough for a reading session — the
+ * browser re-requests the route, and so re-signs, on every reload — and short
+ * enough that a copied URL stops working the same afternoon.
+ */
+const DOWNLOAD_TTL_SECONDS = 60 * 60;
 
 let client: SupabaseClient | null = null;
 function db(): SupabaseClient {
@@ -169,6 +175,15 @@ export const supabaseAdapter: DataAdapter = {
   async createDirectUpload(key) {
     const { data, error } = await db().storage.from(BUCKET).createSignedUploadUrl(key);
     if (error || !data) throw error ?? new Error("Could not prepare the upload.");
+    return { url: data.signedUrl };
+  },
+
+  async createDirectDownload(key) {
+    const { data, error } = await db().storage
+      .from(BUCKET).createSignedUrl(key, DOWNLOAD_TTL_SECONDS);
+    // Falling back to the proxy is better than failing to open the book, and
+    // small books go through it perfectly well.
+    if (error || !data) return null;
     return { url: data.signedUrl };
   },
 

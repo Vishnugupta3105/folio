@@ -155,6 +155,8 @@ export const localAdapter: DataAdapter = {
 
   // No object store here; the browser posts to /api/books/[id]/file instead.
   createDirectUpload: async () => null,
+  // No object store to redirect to; the route serves these off disk.
+  createDirectDownload: async () => null,
 
   getFile: async (key) => {
     try {

@@ -36,6 +36,15 @@ export interface DataAdapter {
    * used instead.
    */
   createDirectUpload(key: string, contentType: string): Promise<{ url: string } | null>;
+  /**
+   * A URL the browser can read the file from, bypassing the server on the way
+   * out just as `createDirectUpload` does on the way in.
+   *
+   * A Vercel function may only return 4.5 MB, and a real book is routinely
+   * larger, so proxying the bytes fails outright on anything but a short one.
+   * Returns null for adapters with no object store, where `getFile` is used.
+   */
+  createDirectDownload(key: string): Promise<{ url: string } | null>;
   getFile(key: string): Promise<{ bytes: ArrayBuffer; contentType: string } | null>;
   deleteFile(key: string): Promise<void>;
 
