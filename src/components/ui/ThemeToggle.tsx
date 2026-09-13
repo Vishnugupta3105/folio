@@ -15,11 +15,13 @@ type Theme = "light" | "dark" | "system";
  * already set the right colours before first paint; this catches up on mount.
  */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system");
+  // Matches the pre-paint default in the layout; anything else would flip the
+  // icon on mount for a reader who has never chosen a theme.
+  const [theme, setTheme] = useState<Theme>("light");
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    setTheme((localStorage.getItem("folio-theme") as Theme) ?? "system");
+    setTheme((localStorage.getItem("folio-theme") as Theme) ?? "light");
   }, []);
 
   useEffect(() => {

@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { HeroBook } from "@/components/landing/HeroBook";
 
 export default async function LandingPage() {
-  // A returning reader shouldn't have to walk past the front door.
-  if (await currentUser()) redirect("/library");
+  // The front door stays the front door. Typing the address used to bounce a
+  // signed-in reader straight to their library, so the one page that explains
+  // what Folio is was unreachable to anyone who had ever signed in — and a
+  // stale session could carry them on to the sign-in screen instead. Everyone
+  // gets the page they asked for; a returning reader just gets a way through.
+  const user = await currentUser();
 
   return (
     <main className="paper-grain min-h-dvh bg-parchment">
@@ -14,15 +17,26 @@ export default async function LandingPage() {
           Folio
         </span>
         <nav className="flex items-center gap-7 text-[0.82rem] text-muted">
-          <Link href="/login" className="transition-colors hover:text-ink">
-            Sign in
-          </Link>
-          <Link
-            href="/signup"
-            className="rounded-[3px] border border-rule px-4 py-2 transition-colors hover:border-faint hover:text-ink"
-          >
-            Start reading
-          </Link>
+          {user ? (
+            <Link
+              href="/library"
+              className="rounded-[3px] border border-rule px-4 py-2 transition-colors hover:border-faint hover:text-ink"
+            >
+              Your library
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="transition-colors hover:text-ink">
+                Sign in
+              </Link>
+              <Link
+                href="/signup"
+                className="rounded-[3px] border border-rule px-4 py-2 transition-colors hover:border-faint hover:text-ink"
+              >
+                Start reading
+              </Link>
+            </>
+          )}
         </nav>
       </header>
 
@@ -45,17 +59,19 @@ export default async function LandingPage() {
 
           <div className="mt-11 flex flex-wrap items-center gap-5">
             <Link
-              href="/signup"
+              href={user ? "/library" : "/signup"}
               className="inline-flex h-12 items-center rounded-[3px] bg-oxblood px-8 text-[0.9rem] font-medium tracking-[0.01em] text-parchment shadow-[0_1px_2px_rgba(34,32,28,0.18)] transition-colors hover:bg-oxblood-bright"
             >
-              Start reading
+              {user ? "Back to your books" : "Start reading"}
             </Link>
-            <Link
-              href="/login"
-              className="text-[0.9rem] text-muted underline decoration-rule underline-offset-[5px] transition-colors hover:text-ink hover:decoration-faint"
-            >
-              I already have books here
-            </Link>
+            {!user && (
+              <Link
+                href="/login"
+                className="text-[0.9rem] text-muted underline decoration-rule underline-offset-[5px] transition-colors hover:text-ink hover:decoration-faint"
+              >
+                I already have books here
+              </Link>
+            )}
           </div>
 
           <dl className="mt-16 grid max-w-lg grid-cols-3 gap-8 border-t border-rule pt-8">

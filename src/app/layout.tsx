@@ -33,9 +33,18 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-/** Applies the stored theme before first paint, so there is never a flash. */
+/**
+ * Applies the stored theme before first paint, so there is never a flash.
+ *
+ * Light is the default rather than the system preference: a first-time visitor
+ * meets the landing and sign-in pages before they have expressed any choice,
+ * and those pages are typeset as paper. Following the OS into dark mode there
+ * means the first impression of a reading app is one nobody asked for. Once a
+ * reader picks a theme — light, dark, or explicitly follow-the-system — that
+ * choice is what persists.
+ */
 const themeScript = `(function(){try{
-var t=localStorage.getItem("folio-theme")||"system";
+var t=localStorage.getItem("folio-theme")||"light";
 var d=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);
 document.documentElement.setAttribute("data-theme",d?"dark":"light");
 }catch(e){document.documentElement.setAttribute("data-theme","light")}})()`;
